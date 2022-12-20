@@ -39,5 +39,17 @@ int push_wstring(lua_State *L, LPCWSTR us);
 HKEY split_registry_key(LPCSTR path, char *keypath);
 int mb_const (LPCSTR name);
 LPCSTR mb_result (int res);
+BOOL create_process_in_job(
+    HANDLE hJob,
+    LPCWSTR lpApplicationName,
+    LPWSTR lpCommandLine,
+    LPSECURITY_ATTRIBUTES lpProcessAttributes,
+    LPSECURITY_ATTRIBUTES lpThreadAttributes,
+    BOOL bInheritHandles,
+    DWORD dwCreationFlags,
+    LPVOID lpEnvironment,
+    LPCWSTR lpCurrentDirectory,
+    LPSTARTUPINFOW lpStartupInfo,
+    LPPROCESS_INFORMATION ppi);
 
 #endif

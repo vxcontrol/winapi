@@ -392,3 +392,47 @@ LPCSTR mb_result (int res) {
   }
 }
 
+
+/// create job for child process control.
+// @param hJob handle to the windows job
+// @param ... looks like CreateProcessW
+// @return a boolean (is it was successful?)
+// @function create_process_in_job
+BOOL create_process_in_job(
+    HANDLE hJob,
+    LPCWSTR lpApplicationName,
+    LPWSTR lpCommandLine,
+    LPSECURITY_ATTRIBUTES lpProcessAttributes,
+    LPSECURITY_ATTRIBUTES lpThreadAttributes,
+    BOOL bInheritHandles,
+    DWORD dwCreationFlags,
+    LPVOID lpEnvironment,
+    LPCWSTR lpCurrentDirectory,
+    LPSTARTUPINFOW lpStartupInfo,
+    LPPROCESS_INFORMATION ppi)
+{
+    BOOL fRc = CreateProcessW(
+        lpApplicationName,
+        lpCommandLine,
+        lpProcessAttributes,
+        lpThreadAttributes,
+        bInheritHandles,
+        dwCreationFlags | CREATE_SUSPENDED,
+        lpEnvironment,
+        lpCurrentDirectory,
+        lpStartupInfo,
+        ppi);
+    if (fRc) {
+        fRc = AssignProcessToJobObject(hJob, ppi->hProcess);
+        if (fRc && !(dwCreationFlags & CREATE_SUSPENDED)) {
+            fRc = ResumeThread(ppi->hThread) != (DWORD)-1;
+        }
+        if (!fRc) {
+            TerminateProcess(ppi->hProcess, 0);
+            CloseHandle(ppi->hProcess);
+            CloseHandle(ppi->hThread);
+            ppi->hProcess = ppi->hThread = NULL;
+        }
+    }
+    return fRc;
+}
